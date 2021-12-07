@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 
 /*
- * state 가 변경이 되변은 App 컴퍼넌트의 모든 코드가 재실행되는 안 좋은 점이 있다.
+ * useEffect 로 지정할 경우 component 의 첫번째 render 시점에만 실행되고,
+ * 이후에는 state 가 변경이 되어도 지정된 내용은 재실행되지 않게 보호해준다.
  */
+
 function App() {
   const [counter, setCounter] = useState(0);
   const onClick = () => {
     setCounter((prev) => prev+1);
   };
 
-  console.log("call API");
+  console.log("Run All the Time");
+  useEffect(() => console.log("Call the API Only Once"), []);
 
   return (
     <div>
