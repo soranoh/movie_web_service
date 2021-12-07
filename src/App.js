@@ -1,38 +1,55 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
-  const [toDo, setToDo] = useState("");
-  const [toDoList, setToDoList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState([]);
+  const [filteredCoins, setFilteredCoins] = useState([]);
+  const [dollars, setDollars] = useState(0);
+
   const onChange = (event) => {
-    setToDo(event.target.value);
+    setDollars(event.target.value);
   };
-  const onSubmit = (event) => {
-    event.preventDefault();
-    if(toDo === ""){
-      return;
-    }
-    setToDoList((currentArray) => [toDo, ...currentArray]);
-    setToDo("");
+  const onClick = () => {
+    setCoins([]);
+    setFilteredCoins([]);
+    coins.map((coin) => {
+      if(coin.quotes.USD.price > dollars) {
+        setFilteredCoins((current) => [coin, ...current]);
+      }
+    });
+    setCoins(filteredCoins);
   };
-  const onReset = () => {
-    setToDoList([]);
-    setToDo("");
-  };
+
+  useEffect(() => {
+    fetch("https://api.coinpaprika.com/v1/tickers")
+      .then((response) => response.json())
+      .then((json) => {
+        setCoins(json);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {}, [dollars]);
+  useEffect(() => {
+    setCoins(filteredCoins);
+  }, [filteredCoins]);
 
   return (
     <div>
-      <h3>My To Do List ({toDoList.length})</h3>
-      <form onSubmit={onSubmit}>
-        <input type="text" value={toDo} placeholder="Write you to do..." onChange={onChange}/>
-        <button>Add To Do</button>
-        <button onClick={onReset}>reset</button>
-      </form>
-      <hr />
-      <ul>
-        {toDoList.map((item, index) => 
-          <li key={index}>{item}</li>
+        <h1>The Coins {loading ? "" : `(${coins.length})`}</h1>
+        <hr />
+        {loading ? (
+          <strong>Loading...</strong>
+        ) : (
+          <div>
+            <input type="number" placeholder="USD" value={dollars} onChange={onChange} />
+            <button onClick={onClick}>Select</button>
+            <br />
+            <select>
+              {coins.map((coin, index) => (<option key={index} >{coin.name} ({coin.symbol}) : ${coin.quotes.USD.price} USD</option>))}
+            </select>
+          </div>
         )}
-      </ul>
     </div>
   );
 }
